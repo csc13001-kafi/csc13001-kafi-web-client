@@ -9,6 +9,9 @@ import image4 from "@/public/4.png";
 import image5 from "@/public/5.png";
 import image6 from "@/public/6.png";
 import image7 from "@/public/7.png";
+import bg1 from "@/public/bg1.png";
+import bg2 from "@/public/bg2.png"; 
+import bg3 from "@/public/bg3.png";
 import { Card, CardContent } from "@/components/ui/card";
 import { twMerge } from "tailwind-merge";
 import bg from "@/public/bg.png";
@@ -19,11 +22,13 @@ export const HomePage = () => {
   return (
     <>
       <Image className="absolute left-0 right-0 top-0 bottom-0" src={bg} alt={"heh"} />
-    <div className="space-y-32 relative">
+    <div className="space-y-20 relative">
+      <Header />
+      <div className="mx-28 space-y-48">
+      <Introduction />
       <Space />
-      <div className="mx-40 space-y-32">
-        <Sellings />
-        <Member />
+      <Sellings />
+      <Member />
       </div>
       <Footer />
     </div>
@@ -45,7 +50,7 @@ const Title = ({ className, title }: { className?: string; title: string }) => (
 );
 
 const Description = ({ className, description }: { className?: string; description: string }) => (
-  <p className={twMerge("text-center m-auto", className)}>{description}</p>
+  <p className={twMerge("text-center", className)}>{description}</p>
 );
 
 const ImageList = () => (
@@ -95,7 +100,7 @@ function Member() {
 
 function Information({ className }: { className?: string }) {
   return (
-    <div className={twMerge("flex flex-col", className)}>
+    <div className={twMerge("flex flex-col py-8 gap-y-7", className)}>
       <Title className="text-left" title="Thành viên Kafi – Đặc quyền dành riêng cho bạn! 🎉☕" />
       <Description className="text-left" description="Tích điểm, nhận ưu đãi, tận hưởng những đặc quyền chỉ dành cho thành viên. Đăng ký ngay để không bỏ lỡ những điều đặc biệt từ Kafi! 💳✨" />
       <Button className="w-max px-10 rounded-full">Đăng ký thành viên</Button>
@@ -175,7 +180,7 @@ function Navbar(){
   )
 }
 
-import { EnvironmentOutlined, PhoneOutlined, MailOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, PhoneOutlined, MailOutlined, ClockCircleOutlined, TikTokFilled } from '@ant-design/icons';
 
 function Contact(){
   return (
@@ -198,3 +203,77 @@ function Copyright(){
     </div>
   )
 }
+
+function Header(){
+  return (
+    <div className="py-8 px-40 flex justify-between items-center">
+      <h1 className =" font-climateCrisis">Kafi</h1>
+      <Navigation />
+      <Account />
+    </div>
+  )
+}
+
+function Navigation(){
+  return (
+    <div className="flex gap-14">
+      <p> Menu </p>
+      <p> Chương trình thành viên </p>
+    </div>
+  )
+}
+
+function Account(){
+  return (
+    <div className="flex gap-10">
+      <Button className="w-max px-10 rounded-full">Đăng Ký</Button>
+      <Button className="w-max px-10 rounded-full">Đăng Nhập</Button>
+    </div>
+  )
+}
+
+function Introduction(){
+  return (
+    <section className="relative gap-12 py-0 px-0">
+      <div className="flex flex-col md:flex-row items-center gap-32">
+        <MainImage/>
+        <MainContent />
+      </div>
+      <SmallImage/>
+    </section>
+  );
+}
+
+
+function MainImage(){
+  return (
+    <div className="relative left-10 w-[90%]" >
+        <Image className="w-full" src={bg3} alt={"hhhh"} />
+    </div>
+  )
+}
+
+function MainContent() {
+  return (
+    <div className="w-1/2 flex-col text-justify"> 
+      <Title className ="text-2xl text-left" title="Kafi – Hơn cả một tách cà phê"/>
+      <p>
+        Chào mừng bạn đến với Kafi, quán cà phê nhỏ mang đến không gian ấm
+        cúng và những ly cà phê đậm đà. Tại Kafi, bạn có thể{" "}
+        <strong>đặt giao hàng tận nơi, đặt chỗ trước</strong> để tận hưởng
+        không gian thoải mái, và tham gia{" "}
+        <strong>chương trình thành viên</strong> với nhiều ưu đãi hấp dẫn.
+        Hãy để mỗi khoảnh khắc cùng Kafi trở nên đặc biệt hơn! ☕✨
+      </p>
+    </div>
+  );
+}
+
+function SmallImage(){
+  return (
+    <div className="absolute -bottom-8 left-1/3 w-[30%]">
+         <Image className="w-full -z-10" src={bg2} alt={"hhhh"} />
+    </div>
+  )
+}
+
