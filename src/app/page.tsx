@@ -1,5 +1,4 @@
-import { HomePage } from "@/components/pages/home-page";
-
+import EditProfile from "@/components/pages/edit-profile";
 export default function Home() {
-  return <HomePage />;
+  return <EditProfile />;
 }
