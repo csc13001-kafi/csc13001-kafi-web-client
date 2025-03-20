@@ -1,5 +1,4 @@
-import { HomePage } from "@/components/pages/home-page";
-
+import Membership from "@/components/pages/membership";
 export default function Home() {
-  return <HomePage />;
+  return <Membership />;
 }
