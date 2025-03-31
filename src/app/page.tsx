@@ -1,3 +1,4 @@
+import Menu from "@/components/pages/menu";
 import { HomePage } from "@/components/pages/home-page";
 import Menu from "@/components/pages/menu";
 import FeedbackPage from "@/components/pages/feedback-page";
