@@ -146,7 +146,7 @@ const RightSection = () => {
 
 const ForgotPasswordLink = ({ onNavigate }: { onNavigate: () => void }) => (
   <div className="w-4/6 text-right text-sm text-gray-600 hover:text-gray-800">
-    <Link href="/forgot-password" onClick={onNavigate}>Quên mật khẩu?</Link>
+    <Link href="/password-recovery" onClick={onNavigate}>Quên mật khẩu?</Link>
   </div>
 );
 

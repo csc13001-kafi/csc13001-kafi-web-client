@@ -32,7 +32,8 @@ interface AuthState {
   signup: (name: string, email: string, phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (token: string, newPassword: string) => Promise<void>;
+  requestPasswordRecovery: (email: string) => Promise<void>;
+  resetPassword: (email: string, otp: string, newPassword: string, confirmPassword: string) => Promise<void>;
   getUserInfo: () => Promise<void>;
   clearError: () => void;
 }
@@ -224,13 +225,38 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      resetPassword: async (token, newPassword) => {
+      requestPasswordRecovery: async (email) => {
         set({ isLoading: true, error: null });
         try {
+          console.log('Requesting password recovery OTP for:', email);
+          await api.post('/auth/password-recovery', { email });
+          console.log('OTP request successful');
+          set({ isLoading: false });
+        } catch (err) {
+          console.error('Password recovery error:', err);
+          if (axios.isAxiosError(err)) {
+            const axiosError = err as AxiosError<ApiErrorResponse>;
+            set({ 
+              isLoading: false, 
+              error: axiosError.response?.data?.message || 'Failed to send OTP' 
+            });
+          } else {
+            set({ isLoading: false, error: 'Failed to send OTP' });
+          }
+        }
+      },
+
+      resetPassword: async (email, otp, newPassword, confirmPassword) => {
+        set({ isLoading: true, error: null });
+        try {
+          console.log('Resetting password with OTP');
           await api.post('/auth/reset-password', { 
-            token, 
-            newPassword 
+            email,
+            otp,
+            newPassword,
+            confirmPassword
           });
+          console.log('Password reset successful');
           set({ isLoading: false });
         } catch (err) {
           console.error('Reset password error:', err);
