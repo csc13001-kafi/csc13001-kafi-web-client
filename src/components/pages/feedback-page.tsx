@@ -1,28 +1,33 @@
 'use client'
 import { twMerge } from "tailwind-merge";
 import Image from 'next/image';
-
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 const FeedbackPage = () => (
-    <div className="bg-gray-100 p-8 min-h-screen">
-        <div className="mx-28 space-y-20 relative">
-            <Intro />
-        </div>
-        <div className="min-h-screen flex justify-center items-center">
-            <div className="max-w-3xl w-full bg-white rounded-2xl shadow-2xl space-y-6 p-8">
-                <div className="flex items-center space-x-3 mb-4">
-                    <Image src="/Logo.png" alt="Kafi Logo" width={200} height={200} />
+    <div className="bg-gray-100 min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 p-8">
+            <div className="mx-28 space-y-20 relative">
+                <Intro />
+            </div>
+            <div className="min-h-screen flex justify-center items-center">
+                <div className="max-w-3xl w-full bg-white rounded-2xl shadow-2xl space-y-6 p-8">
+                    <div className="flex items-center space-x-3 mb-4">
+                        <Image src="/Logo.png" alt="Kafi Logo" width={200} height={200} />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">Customer Feedback</h3>
+                    <p className="text-black mb-6">
+                        Đối với Kafi, khách hàng là châu báu. Bạn cho Kafi biết có thể cải thiện gì để mang đến dịch vụ tốt hơn cho bạn nhé!
+                    </p>
+                    <p className="text-black mb-6">
+                        Nếu gặp bất kỳ vấn đề nào khiến bạn chưa hài lòng, vui lòng cho Chidori biết để có giải pháp khắc phục nhanh chóng ạ.
+                    </p>
+                    <FeedbackForm />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Customer Feedback</h3>
-                <p className="text-black mb-6">
-                    Đối với Kafi, khách hàng là châu báu. Bạn cho Kafi biết có thể cải thiện gì để mang đến dịch vụ tốt hơn cho bạn nhé!
-                </p>
-                <p className="text-black mb-6">
-                    Nếu gặp bất kỳ vấn đề nào khiến bạn chưa hài lòng, vui lòng cho Chidori biết để có giải pháp khắc phục nhanh chóng ạ.
-                </p>
-                <FeedbackForm />
             </div>
         </div>
+        <Footer />
     </div>
 );
 

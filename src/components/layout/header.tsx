@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import logo from "../../../public/logo.png";
 import { useAuthStore } from "@/stores/auth-store";
 import { useRouter } from "next/navigation";
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { ChevronDownIcon } from '@radix-ui/react-icons';
 
 export function Header() {
   return (
@@ -53,7 +55,7 @@ function Navigation() {
 }
 
 function Account() {
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, logout, user } = useAuthStore();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -63,20 +65,38 @@ function Account() {
 
   if (isAuthenticated) {
     return (
-      <div className="flex gap-10">
-        <Button 
-          onClick={() => router.push("/edit-profile")}
-          className="w-max px-10 rounded-full bg-green-600 hover:bg-green-700 select-none"
-        >
-          Tài khoản
-        </Button>
-        <Button 
-          onClick={handleLogout} 
-          className="w-max px-10 rounded-full bg-red-500 hover:bg-red-600 select-none"
-        >
-          Đăng xuất
-        </Button>
-      </div>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <button className="flex items-center gap-2 hover:opacity-80 transition">
+            <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-semibold">
+              {user?.name?.[0] || 'U'}
+            </div>
+            <span className="font-medium">{user?.name || 'User'}</span>
+            <ChevronDownIcon className="w-4 h-4" />
+          </button>
+        </DropdownMenu.Trigger>
+
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            className="min-w-[220px] bg-white rounded-md p-2 shadow-lg border border-gray-200"
+            sideOffset={5}
+            align="end"
+          >
+            <DropdownMenu.Item
+              className="flex items-center px-4 py-2 text-sm outline-none cursor-pointer hover:bg-gray-100 rounded-md"
+              onClick={() => router.push("/edit-profile")}
+            >
+              Chỉnh sửa thông tin
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              className="flex items-center px-4 py-2 text-sm outline-none cursor-pointer hover:bg-gray-100 rounded-md text-red-600"
+              onClick={handleLogout}
+            >
+              Đăng xuất
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
     );
   }
 

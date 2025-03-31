@@ -2,14 +2,20 @@
 import Image from "next/image";
 import { twMerge } from "tailwind-merge";
 import card from "../../../public/home-page/card 6.png";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 export default function Membership() {
     return (
-        <div className="bg-gray-100 p-8 min-h-screen">
-            <div className="mx-28 space-y-20 relative">
-                <Intro />
-                <MyMembership />
+        <div className="bg-gray-100 min-h-screen flex flex-col">
+            <Header />
+            <div className="flex-1 p-8">
+                <div className="mx-28 space-y-20 relative">
+                    <Intro />
+                    <MyMembership />
+                </div>
             </div>
+            <Footer />
         </div>
     );
 }
