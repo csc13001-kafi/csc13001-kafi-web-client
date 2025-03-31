@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
 import { twMerge } from "tailwind-merge";
-import card from "../../../public/card 6.png";
+import card from "../../../public/home-page/card 6.png";
 
 export default function Membership() {
     return (
