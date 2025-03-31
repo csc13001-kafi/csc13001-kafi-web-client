@@ -1,3 +1,4 @@
+import FeedbackPage from "@/components/pages/feedback-page";
 import SignupPage from "@/components/pages/signup-page";
 import ForgotPasswordPage from "@/components/pages/forgot-password-page"; 
 import RecoveryPasswordPage from "@/components/pages/recovery-password-page";
