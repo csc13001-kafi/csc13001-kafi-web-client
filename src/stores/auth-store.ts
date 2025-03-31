@@ -30,10 +30,12 @@ interface AuthState {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, phone: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (token: string, newPassword: string) => Promise<void>;
+  requestPasswordRecovery: (email: string) => Promise<void>;
+  resetPassword: (email: string, otp: string, newPassword: string, confirmPassword: string) => Promise<void>;
   getUserInfo: () => Promise<void>;
+  clearError: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -44,6 +46,10 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+
+      clearError: () => {
+        set({ error: null });
+      },
 
       getUserInfo: async () => {
         const { token } = get();
@@ -139,8 +145,9 @@ export const useAuthStore = create<AuthState>()(
       signup: async (name, email, phone, password) => {
         set({ isLoading: true, error: null });
         try {
+          const username = name;
           const response = await api.post<AuthResponse>('/auth/sign-up', {
-            name,
+            username,
             email,
             phone,
             password
@@ -172,13 +179,31 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () => {
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          error: null,
-        });
+      logout: async () => {
+        try {
+          const { token } = get();
+          // Only make the API call if we have a token
+          if (token) {
+            console.log("Calling sign-out API");
+            try {
+              // Call the sign-out API endpoint
+              await api.delete('/auth/sign-out');
+              console.log("Successfully signed out from API");
+            } catch (err) {
+              // Even if the API call fails, we still want to log out locally
+              console.error("Error calling sign-out API:", err);
+            }
+          }
+        } finally {
+          // Always clear the local state regardless of API response
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            error: null,
+          });
+          console.log("Logged out locally");
+        }
       },
 
       forgotPassword: async (email) => {
@@ -200,13 +225,38 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      resetPassword: async (token, newPassword) => {
+      requestPasswordRecovery: async (email) => {
         set({ isLoading: true, error: null });
         try {
+          console.log('Requesting password recovery OTP for:', email);
+          await api.post('/auth/password-recovery', { email });
+          console.log('OTP request successful');
+          set({ isLoading: false });
+        } catch (err) {
+          console.error('Password recovery error:', err);
+          if (axios.isAxiosError(err)) {
+            const axiosError = err as AxiosError<ApiErrorResponse>;
+            set({ 
+              isLoading: false, 
+              error: axiosError.response?.data?.message || 'Failed to send OTP' 
+            });
+          } else {
+            set({ isLoading: false, error: 'Failed to send OTP' });
+          }
+        }
+      },
+
+      resetPassword: async (email, otp, newPassword, confirmPassword) => {
+        set({ isLoading: true, error: null });
+        try {
+          console.log('Resetting password with OTP');
           await api.post('/auth/reset-password', { 
-            token, 
-            newPassword 
+            email,
+            otp,
+            newPassword,
+            confirmPassword
           });
+          console.log('Password reset successful');
           set({ isLoading: false });
         } catch (err) {
           console.error('Reset password error:', err);

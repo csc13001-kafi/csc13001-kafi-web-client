@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import groupcf from "../../../public/groupcf.png"; 
@@ -59,8 +59,17 @@ const RightSection = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { resetPassword, isLoading } = useAuthStore();
+  const { resetPassword, isLoading, error: authError, clearError } = useAuthStore();
   const router = useRouter();
+
+  // Clear any previous errors when the component mounts
+  useEffect(() => {
+    clearError();
+    return () => {
+      // Also clear errors when unmounting
+      clearError();
+    };
+  }, [clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +96,7 @@ const RightSection = () => {
       
       // Redirect to login page after 3 seconds
       setTimeout(() => {
+        clearError(); // Clear errors before redirecting
         router.push("/login");
       }, 3000);
     } catch {
@@ -94,13 +104,20 @@ const RightSection = () => {
     }
   };
 
+  // Clear errors when navigating away using the Link component
+  const handleNavigation = () => {
+    // Clear both local and store errors
+    setError(null);
+    clearError();
+  };
+
   return (
     <form onSubmit={handleSubmit} className="w-1/2 flex flex-col justify-center items-center space-y-4">
       <h1 className="text-4xl font-bold mb-6">Đặt Lại Mật Khẩu</h1>
       
-      {error && (
+      {(error || authError) && (
         <div className="w-4/6 text-red-500 text-sm mb-2">
-          {error}
+          {error || authError}
         </div>
       )}
       
@@ -150,16 +167,16 @@ const RightSection = () => {
             )}
           </button>
           
-          <BackToLoginLink />
+          <BackToLoginLink onNavigate={handleNavigation} />
         </>
       )}
     </form>
   );
 };
 
-const BackToLoginLink = () => (
+const BackToLoginLink = ({ onNavigate }: { onNavigate: () => void }) => (
   <p className="mt-6 text-sm">
-    <Link href="/login" className="text-green-600 font-semibold">Quay lại đăng nhập</Link>
+    <Link href="/login" onClick={onNavigate} className="text-green-600 font-semibold">Quay lại đăng nhập</Link>
   </p>
 );
 

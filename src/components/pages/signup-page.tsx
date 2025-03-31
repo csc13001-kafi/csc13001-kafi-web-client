@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import groupcf from "../../../public/groupcf.png"; 
@@ -60,8 +60,18 @@ const RightSection = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const { signup, isLoading } = useAuthStore();
+  const [success, setSuccess] = useState(false);
+  const { signup, isLoading, error: authError, clearError } = useAuthStore();
   const router = useRouter();
+
+  // Clear any previous errors when the component mounts
+  useEffect(() => {
+    clearError();
+    return () => {
+      // Also clear errors when unmounting
+      clearError();
+    };
+  }, [clearError]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,84 +96,107 @@ const RightSection = () => {
       if (error) {
         setError(error);
       } else if (isAuthenticated) {
-        router.push("/"); // Redirect to home page instead of dashboard
+        // Logout the user after successful signup
+        const { logout } = useAuthStore.getState();
+        logout();
+        
+        setSuccess(true);
+        
+        router.push("/login");
       }
     } catch {
       setError("An error occurred during registration");
     }
   };
 
+  // Clear errors when navigating away using the Link component
+  const handleNavigation = () => {
+    // Clear both local and store errors
+    setError(null);
+    clearError();
+  };
+
   return (
     <form onSubmit={handleSignup} className="w-1/2 flex flex-col justify-center items-center space-y-2">
       <h1 className="text-4xl font-bold mb-6">Đăng Ký</h1>
       
-      {error && (
+      {(error || authError) && (
         <div className="w-4/6 text-red-500 text-sm mb-2">
-          {error}
+          {error || authError}
+        </div>
+      )}
+
+      {success && (
+        <div className="w-4/6 text-green-600 text-sm mb-2">
+          Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...
         </div>
       )}
       
-      <InputField 
-        label="Họ và tên" 
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      
-      <InputField 
-        label="Email" 
-        type="email" 
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      
-      <InputField 
-        label="Số điện thoại" 
-        type="tel"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
-      
-      <InputField 
-        label="Mật khẩu" 
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      
-      <InputField 
-        label="Xác nhận mật khẩu" 
-        type="password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-      />
-      
-      <div className="h-2"></div>
-      
-      <button 
-        type="submit"
-        disabled={isLoading}
-        className="bg-gradient-to-r from-[#1E4522] to-[#3A683D] text-white font-semibold px-6 py-3 rounded-full flex items-center justify-center space-x-2 shadow-md hover:opacity-90 transition disabled:opacity-50"
-      >
-        {isLoading ? "Đang xử lý..." : "Đăng Ký"}
-        {!isLoading && (
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18l6-6-6-6"></path>
-          </svg>
-        )}
-      </button>
-      
-      <div className="h-2"></div>
-      
-      <LoginPrompt />
+      {!success && (
+        <>
+          <InputField 
+            label="Họ và tên" 
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          
+          <InputField 
+            label="Email" 
+            type="email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          
+          <InputField 
+            label="Số điện thoại" 
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          
+          <InputField 
+            label="Mật khẩu" 
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          
+          <InputField 
+            label="Xác nhận mật khẩu" 
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          
+          <div className="h-2"></div>
+          
+          <button 
+            type="submit"
+            disabled={isLoading}
+            className="bg-gradient-to-r from-[#1E4522] to-[#3A683D] text-white font-semibold px-6 py-3 rounded-full flex items-center justify-center space-x-2 shadow-md hover:opacity-90 transition disabled:opacity-50"
+          >
+            {isLoading ? "Đang xử lý..." : "Đăng Ký"}
+            {!isLoading && (
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            )}
+          </button>
+          
+          <div className="h-2"></div>
+          
+          <LoginPrompt onNavigate={handleNavigation} />
+        </>
+      )}
     </form>
   );
 };
 
-const LoginPrompt = () => (
+const LoginPrompt = ({ onNavigate }: { onNavigate: () => void }) => (
   <p className="text-sm">
     Đã có tài khoản?{" "}
-    <Link href="/login" className="text-green-600 font-semibold">Đăng Nhập</Link>
+    <Link href="/login" onClick={onNavigate} className="text-green-600 font-semibold">Đăng Nhập</Link>
   </p>
 );
 

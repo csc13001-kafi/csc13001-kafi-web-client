@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import groupcf from "../../../public/groupcf.png"; 
 import logo from "../../../public/logo.png"; 
@@ -57,8 +57,17 @@ const RightSection = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const { login, isLoading, error: authError } = useAuthStore();
+  const { login, isLoading, error: authError, clearError } = useAuthStore();
   const router = useRouter();
+
+  // Clear any previous errors when the component mounts
+  useEffect(() => {
+    clearError();
+    return () => {
+      // Also clear errors when unmounting
+      clearError();
+    };
+  }, [clearError]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +91,13 @@ const RightSection = () => {
     } catch {
       setError("An error occurred during login");
     }
+  };
+
+  // Clear errors when navigating away using the Link component
+  const handleNavigation = () => {
+    // Clear both local and store errors
+    setError(null);
+    clearError();
   };
 
   return (
@@ -108,7 +124,7 @@ const RightSection = () => {
         onChange={(e) => setPassword(e.target.value)}
       />
       
-      <ForgotPasswordLink />
+      <ForgotPasswordLink onNavigate={handleNavigation} />
       
       <button 
         type="submit"
@@ -123,21 +139,21 @@ const RightSection = () => {
         )}
       </button>
       
-      <SignUpPrompt />
+      <SignUpPrompt onNavigate={handleNavigation} />
     </form>
   );
 };
 
-const ForgotPasswordLink = () => (
+const ForgotPasswordLink = ({ onNavigate }: { onNavigate: () => void }) => (
   <div className="w-4/6 text-right text-sm text-gray-600 hover:text-gray-800">
-    <Link href="/forgot-password">Quên mật khẩu?</Link>
+    <Link href="/password-recovery" onClick={onNavigate}>Quên mật khẩu?</Link>
   </div>
 );
 
-const SignUpPrompt = () => (
+const SignUpPrompt = ({ onNavigate }: { onNavigate: () => void }) => (
   <p className="mt-6 text-sm">
     Chưa có tài khoản?{" "}
-    <Link href="/signup" className="text-green-600 font-semibold">Đăng Ký</Link>
+    <Link href="/signup" onClick={onNavigate} className="text-green-600 font-semibold">Đăng Ký</Link>
   </p>
 );
 
