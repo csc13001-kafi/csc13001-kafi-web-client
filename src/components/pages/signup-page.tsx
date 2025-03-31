@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import groupcf from "../../../public/groupcf.png"; 
@@ -60,8 +60,17 @@ const RightSection = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const { signup, isLoading } = useAuthStore();
+  const { signup, isLoading, error: authError, clearError } = useAuthStore();
   const router = useRouter();
+
+  // Clear any previous errors when the component mounts
+  useEffect(() => {
+    clearError();
+    return () => {
+      // Also clear errors when unmounting
+      clearError();
+    };
+  }, [clearError]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,13 +102,20 @@ const RightSection = () => {
     }
   };
 
+  // Clear errors when navigating away using the Link component
+  const handleNavigation = () => {
+    // Clear both local and store errors
+    setError(null);
+    clearError();
+  };
+
   return (
     <form onSubmit={handleSignup} className="w-1/2 flex flex-col justify-center items-center space-y-2">
       <h1 className="text-4xl font-bold mb-6">Đăng Ký</h1>
       
-      {error && (
+      {(error || authError) && (
         <div className="w-4/6 text-red-500 text-sm mb-2">
-          {error}
+          {error || authError}
         </div>
       )}
       
@@ -155,15 +171,15 @@ const RightSection = () => {
       
       <div className="h-2"></div>
       
-      <LoginPrompt />
+      <LoginPrompt onNavigate={handleNavigation} />
     </form>
   );
 };
 
-const LoginPrompt = () => (
+const LoginPrompt = ({ onNavigate }: { onNavigate: () => void }) => (
   <p className="text-sm">
     Đã có tài khoản?{" "}
-    <Link href="/login" className="text-green-600 font-semibold">Đăng Nhập</Link>
+    <Link href="/login" onClick={onNavigate} className="text-green-600 font-semibold">Đăng Nhập</Link>
   </p>
 );
 

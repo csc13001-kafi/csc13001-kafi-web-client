@@ -34,6 +34,7 @@ interface AuthState {
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
   getUserInfo: () => Promise<void>;
+  clearError: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -44,6 +45,10 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+
+      clearError: () => {
+        set({ error: null });
+      },
 
       getUserInfo: async () => {
         const { token } = get();
