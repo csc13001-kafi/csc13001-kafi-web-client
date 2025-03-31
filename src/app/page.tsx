@@ -1,3 +1,5 @@
+import { HomePage } from "@/components/pages/home-page";
+import Menu from "@/components/pages/menu";
 import FeedbackPage from "@/components/pages/feedback-page";
 import SignupPage from "@/components/pages/signup-page";
 import ForgotPasswordPage from "@/components/pages/forgot-password-page"; 
