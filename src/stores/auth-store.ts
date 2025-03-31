@@ -139,8 +139,9 @@ export const useAuthStore = create<AuthState>()(
       signup: async (name, email, phone, password) => {
         set({ isLoading: true, error: null });
         try {
+          const username = name;
           const response = await api.post<AuthResponse>('/auth/sign-up', {
-            name,
+            username,
             email,
             phone,
             password
