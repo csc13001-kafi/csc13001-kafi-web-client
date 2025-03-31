@@ -1,23 +1,21 @@
 "use client";
 import Image from "next/image";
-import { useCounterStore } from "@/providers/counter-store-provider";
 import { Button } from "@/components/ui/button";
-import image1 from "@/public/1.png";
-import image2 from "@/public/2.png";
-import image3 from "@/public/3.png";
-import image4 from "@/public/4.png";
-import image5 from "@/public/5.png";
-import image6 from "@/public/6.png";
-import image7 from "@/public/7.png";
-import bg1 from "@/public/bg1.png";
-import bg2 from "@/public/bg2.png"; 
-import bg3 from "@/public/bg3.png";
+import image1 from "@/public/home-page/1.png";
+import image2 from "@/public/home-page/2.png";
+import image3 from "@/public/home-page/3.png";
+import image4 from "@/public/home-page/4.png";
+import image5 from "@/public/home-page/5.png";
+import image6 from "@/public/home-page/6.png";
+import image7 from "@/public/home-page/7.png";
+import bg2 from "@/public/home-page/bg2.png"; 
+import bg3 from "@/public/home-page/bg3.png";
+import card from "@/public/home-page/card 6.png";
 import { Card, CardContent } from "@/components/ui/card";
 import { twMerge } from "tailwind-merge";
-import bg from "@/public/bg.png";
+import bg from "@/public/home-page/bg.png";
 
 export const HomePage = () => {
-  const { count, incrementCount, decrementCount } = useCounterStore((state) => state);
 
   return (
     <>
@@ -108,8 +106,6 @@ function Information({ className }: { className?: string }) {
   );
 }
 
-import card from "@/public/card 6.png";
-
 function MemberCard({
   className,
   name,
@@ -180,7 +176,7 @@ function Navbar(){
   )
 }
 
-import { EnvironmentOutlined, PhoneOutlined, MailOutlined, ClockCircleOutlined, TikTokFilled } from '@ant-design/icons';
+import { EnvironmentOutlined, PhoneOutlined, MailOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 function Contact(){
   return (
