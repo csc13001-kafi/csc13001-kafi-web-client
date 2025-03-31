@@ -60,6 +60,7 @@ const RightSection = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const { signup, isLoading, error: authError, clearError } = useAuthStore();
   const router = useRouter();
 
@@ -95,7 +96,13 @@ const RightSection = () => {
       if (error) {
         setError(error);
       } else if (isAuthenticated) {
-        router.push("/"); // Redirect to home page instead of dashboard
+        // Logout the user after successful signup
+        const { logout } = useAuthStore.getState();
+        logout();
+        
+        setSuccess(true);
+        
+        router.push("/login");
       }
     } catch {
       setError("An error occurred during registration");
@@ -118,60 +125,70 @@ const RightSection = () => {
           {error || authError}
         </div>
       )}
+
+      {success && (
+        <div className="w-4/6 text-green-600 text-sm mb-2">
+          Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...
+        </div>
+      )}
       
-      <InputField 
-        label="Họ và tên" 
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      
-      <InputField 
-        label="Email" 
-        type="email" 
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      
-      <InputField 
-        label="Số điện thoại" 
-        type="tel"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
-      
-      <InputField 
-        label="Mật khẩu" 
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      
-      <InputField 
-        label="Xác nhận mật khẩu" 
-        type="password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-      />
-      
-      <div className="h-2"></div>
-      
-      <button 
-        type="submit"
-        disabled={isLoading}
-        className="bg-gradient-to-r from-[#1E4522] to-[#3A683D] text-white font-semibold px-6 py-3 rounded-full flex items-center justify-center space-x-2 shadow-md hover:opacity-90 transition disabled:opacity-50"
-      >
-        {isLoading ? "Đang xử lý..." : "Đăng Ký"}
-        {!isLoading && (
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18l6-6-6-6"></path>
-          </svg>
-        )}
-      </button>
-      
-      <div className="h-2"></div>
-      
-      <LoginPrompt onNavigate={handleNavigation} />
+      {!success && (
+        <>
+          <InputField 
+            label="Họ và tên" 
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          
+          <InputField 
+            label="Email" 
+            type="email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          
+          <InputField 
+            label="Số điện thoại" 
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          
+          <InputField 
+            label="Mật khẩu" 
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          
+          <InputField 
+            label="Xác nhận mật khẩu" 
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          
+          <div className="h-2"></div>
+          
+          <button 
+            type="submit"
+            disabled={isLoading}
+            className="bg-gradient-to-r from-[#1E4522] to-[#3A683D] text-white font-semibold px-6 py-3 rounded-full flex items-center justify-center space-x-2 shadow-md hover:opacity-90 transition disabled:opacity-50"
+          >
+            {isLoading ? "Đang xử lý..." : "Đăng Ký"}
+            {!isLoading && (
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            )}
+          </button>
+          
+          <div className="h-2"></div>
+          
+          <LoginPrompt onNavigate={handleNavigation} />
+        </>
+      )}
     </form>
   );
 };
