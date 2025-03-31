@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useRouter } from "next/navigation";
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
+import { useEffect, useState } from "react";
 
 export function Header() {
   return (
@@ -55,8 +56,78 @@ function Navigation() {
 }
 
 function Account() {
-  const { isAuthenticated, logout, user } = useAuthStore();
+  const { isAuthenticated, logout, user, token, getUserInfo } = useAuthStore();
+  const [displayName, setDisplayName] = useState<string>('User');
+  const [initial, setInitial] = useState<string>('U');
   const router = useRouter();
+
+  // Run once on component mount to fetch user data if needed
+  useEffect(() => {
+    const fetchUserDataOnMount = async () => {
+      console.log("Header Account component mounted");
+      
+      if (isAuthenticated && token) {
+        console.log("User is authenticated with token");
+        
+        // If no user data at all, try to fetch it
+        if (!user) {
+          console.log("No user data, fetching from API...");
+          try {
+            await getUserInfo();
+          } catch (error) {
+            console.error("Failed to fetch user data on mount:", error);
+          }
+        }
+        // If user exists but no name, also try to fetch more complete data
+        else if (user && !user.username) {
+          console.log("User exists but missing name, fetching more data...");
+          try {
+            await getUserInfo();
+          } catch (error) {
+            console.error("Failed to fetch additional user data:", error);
+            
+            // If we still don't have a name, use email or set a default
+            if (user.email) {
+              console.log("Using email as fallback for name:", user.email);
+              setDisplayName(user.email.split('@')[0]);
+              setInitial((user.email[0] || 'U').toUpperCase());
+            }
+          }
+        }
+      }
+    };
+    
+    fetchUserDataOnMount();
+  }, [isAuthenticated, token, user, getUserInfo, setDisplayName, setInitial]);
+
+  // This effect updates the displayed name whenever user data changes
+  useEffect(() => {
+    if (user) {
+      console.log("User data updated in header:", user);
+      // First try to get the name from user object
+      if (user.name) {
+        console.log("Setting display name to:", user.name);
+        setDisplayName(user.name);
+        setInitial((user.name[0] || 'U').toUpperCase());
+      } 
+      // If no name, try to use username
+      else if (user.username) {
+        console.log("Setting display name to username:", user.username);
+        setDisplayName(user.username);
+        setInitial((user.username[0] || 'U').toUpperCase());
+      }
+      // Fall back to email if available
+      else if (user.email) {
+        console.log("Setting display name to email:", user.email);
+        setDisplayName(user.email.split('@')[0]);
+        setInitial((user.email[0] || 'U').toUpperCase());
+      }
+    } else {
+      console.log("No user data available");
+      setDisplayName('User');
+      setInitial('U');
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -69,9 +140,9 @@ function Account() {
         <DropdownMenu.Trigger asChild>
           <button className="flex items-center gap-2 hover:opacity-80 transition">
             <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-semibold">
-              {user?.name?.[0] || 'U'}
+              {initial}
             </div>
-            <span className="font-medium">{user?.name || 'User'}</span>
+            <span className="font-medium">{displayName}</span>
             <ChevronDownIcon className="w-4 h-4" />
           </button>
         </DropdownMenu.Trigger>

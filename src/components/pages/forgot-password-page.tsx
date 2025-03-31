@@ -9,7 +9,7 @@ import { useAuthStore } from "@/stores/auth-store";
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="relative flex h-screen">
+    <div className="relative flex h-screen w-screen overflow-hidden">
       <BackgroundImage />
       <LeftSection />
       <RightSection />
@@ -22,7 +22,8 @@ const BackgroundImage = () => (
     src={bgImage}
     alt="Background"
     fill
-    className="object-cover -z-10"
+    className="object-cover w-full h-full fixed inset-0 -z-10"
+    priority
   />
 );
 
