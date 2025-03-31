@@ -30,7 +30,7 @@ interface AuthState {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, phone: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
   getUserInfo: () => Promise<void>;
@@ -178,13 +178,31 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () => {
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          error: null,
-        });
+      logout: async () => {
+        try {
+          const { token } = get();
+          // Only make the API call if we have a token
+          if (token) {
+            console.log("Calling sign-out API");
+            try {
+              // Call the sign-out API endpoint
+              await api.delete('/auth/sign-out');
+              console.log("Successfully signed out from API");
+            } catch (err) {
+              // Even if the API call fails, we still want to log out locally
+              console.error("Error calling sign-out API:", err);
+            }
+          }
+        } finally {
+          // Always clear the local state regardless of API response
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            error: null,
+          });
+          console.log("Logged out locally");
+        }
       },
 
       forgotPassword: async (email) => {

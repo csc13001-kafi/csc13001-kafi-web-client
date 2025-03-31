@@ -59,6 +59,7 @@ function Account() {
   const { isAuthenticated, logout, user, token, getUserInfo } = useAuthStore();
   const [displayName, setDisplayName] = useState<string>('User');
   const [initial, setInitial] = useState<string>('U');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
   // Run once on component mount to fetch user data if needed
@@ -129,9 +130,24 @@ function Account() {
     }
   }, [user]);
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      // Show loading state
+      setIsLoggingOut(true);
+      
+      // Call the async logout function
+      await logout();
+      
+      // Redirect to login page after successful logout
+      router.push("/");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Still redirect to login page even if there's an error
+      router.push("/login");
+    } finally {
+      // Clear loading state
+      setIsLoggingOut(false);
+    }
   };
 
   if (isAuthenticated) {
@@ -162,8 +178,16 @@ function Account() {
             <DropdownMenu.Item
               className="flex items-center px-4 py-2 text-sm outline-none cursor-pointer hover:bg-gray-100 rounded-md text-red-600"
               onClick={handleLogout}
+              disabled={isLoggingOut}
             >
-              Đăng xuất
+              {isLoggingOut ? (
+                <>
+                  <span className="animate-spin mr-2">⟳</span>
+                  Đang đăng xuất...
+                </>
+              ) : (
+                "Đăng xuất"
+              )}
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
