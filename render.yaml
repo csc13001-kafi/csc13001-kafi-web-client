@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: kafi-web-client
+    env: docker
+    region: singapore
+    plan: free
+    branch: main
+    healthCheckPath: /api/health
+    numInstances: 1
+    buildFilter:
+      paths:
+        - src/**
+        - public/**
+        - package.json
+        - pnpm-lock.yaml
+        - next.config.js
+        - Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_BASE_URL
+        sync: false
