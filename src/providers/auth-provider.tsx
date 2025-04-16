@@ -1,76 +1,84 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 
 interface AuthProviderProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
 // Pages that require authentication
 const protectedPaths = [
-  '/edit-profile',
-  // Add other protected paths here
+    '/edit-profile',
+    '/membership',
+    // Add other protected paths here
 ];
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const { isAuthenticated, token, user, getUserInfo } = useAuthStore();
-  const router = useRouter();
-  const pathname = usePathname();
+    const [isLoading, setIsLoading] = useState(true);
+    const { isAuthenticated, token, user, getUserInfo } = useAuthStore();
+    const router = useRouter();
+    const pathname = usePathname();
+    const initRef = useRef(false);
 
-  useEffect(() => {
-    const initAuth = async () => {
-      console.log("Auth Provider initializing...");
-      console.log("Initial auth state:", { 
-        isAuthenticated, 
-        hasToken: !!token, 
-        hasUser: !!user 
-      });
-      
-      // If we have a token but no user data or incomplete user data, try to fetch user info
-      if (token && (!user || !user.name)) {
-        console.log("Token exists but user data is missing or incomplete. Fetching user info...");
-        try {
-          await getUserInfo();
-          console.log("User info fetched successfully");
-        } catch (error) {
-          console.error("Failed to fetch user info on init:", error);
+    // This effect only runs once on mount to fetch user data
+    useEffect(() => {
+        const initializeAuth = async () => {
+            if (initRef.current) return;
+            initRef.current = true;
+
+            console.log('Auth Provider initializing...');
+
+            // If we have a token but no user data, try to fetch it only once
+            if (token && !user) {
+                try {
+                    await getUserInfo();
+                } catch (error) {
+                    console.error('Failed to fetch user info on init:', error);
+                }
+            }
+
+            setIsLoading(false);
+        };
+
+        initializeAuth();
+    }, [token, user, getUserInfo]);
+
+    // This effect handles navigation/routing based on auth state
+    // It doesn't trigger user info fetching
+    useEffect(() => {
+        if (isLoading) return;
+
+        // Check if the current path requires authentication
+        const isProtectedPath = protectedPaths.some((path) =>
+            pathname.startsWith(path),
+        );
+        const isAuthPath = [
+            '/login',
+            '/signup',
+            '/forgot-password',
+            '/recovery-password',
+        ].includes(pathname);
+
+        if (!isAuthenticated && isProtectedPath) {
+            // If not authenticated and trying to access a protected path, redirect to login
+            router.push('/login');
+        } else if (isAuthenticated && isAuthPath) {
+            // If already authenticated and trying to access auth pages, redirect to home
+            router.push('/');
         }
-      }
-      
-      // Check if the current path requires authentication
-      const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
-      const isAuthPath = ['/login', '/signup', '/forgot-password', '/recovery-password'].includes(pathname);
-      
-      if (!isAuthenticated && isProtectedPath) {
-        // If not authenticated and trying to access a protected path, redirect to login
-        console.log("Not authenticated, redirecting from protected path to login");
-        router.push('/login');
-      } else if (isAuthenticated && isAuthPath) {
-        // If already authenticated and trying to access auth pages, redirect to home
-        console.log("Already authenticated, redirecting from auth path to home");
-        router.push('/');
-      }
-      
-      // Done checking, stop loading
-      console.log("Auth initialization complete");
-      setIsLoading(false);
-    };
+    }, [isAuthenticated, pathname, router, isLoading]);
 
-    initAuth();
-  }, [isAuthenticated, pathname, router, token, user, getUserInfo]);
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-green-700"></div>
+            </div>
+        );
+    }
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
-      </div>
-    );
-  }
-
-  // Render children
-  return <>{children}</>;
-} 
+    // Render children
+    return <>{children}</>;
+}

@@ -4,9 +4,8 @@ import { twMerge } from 'tailwind-merge';
 import card from '../../../public/home-page/card 6.png';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { useEffect, useState } from 'react';
-import { useAuthStore } from '@/stores/auth-store';
-import api from '@/lib/api';
+import { useEffect, useState, useRef } from 'react';
+import { useAuthStore, User } from '@/stores/auth-store';
 
 export default function Membership() {
     return (
@@ -83,7 +82,8 @@ const MyMembership = () => {
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const { token } = useAuthStore();
+    const { token, user, getUserInfo } = useAuthStore();
+    const initRef = useRef(false);
 
     const evaluateLoyalty = (point: number): string => {
         if (point >= 5000) {
@@ -96,36 +96,44 @@ const MyMembership = () => {
         return 'Đồng';
     };
 
+    // Initial setup - only runs once
     useEffect(() => {
-        const fetchUserData = async () => {
-            if (!token) {
-                setError('Bạn cần đăng nhập để xem thông tin thành viên');
-                setLoading(false);
-                return;
-            }
+        if (initRef.current) return;
+        initRef.current = true;
 
-            try {
-                setLoading(true);
+        if (!token) {
+            setError('Bạn cần đăng nhập để xem thông tin thành viên');
+            setLoading(false);
+            return;
+        }
 
-                const response = await api.get(`/users/user`);
-                const data = response.data;
-                console.log(data);
-                setUserData({
-                    name: data.username || 'Chưa có thông tin',
-                    phone: data.phone || 'Chưa có thông tin',
-                    point: data.loyaltyPoints?.toString() || '0',
-                    loyalty: evaluateLoyalty(data.loyaltyPoints) || 'Đồng',
-                });
-            } catch (err) {
-                console.error('Error fetching user data:', err);
-                setError('Không thể tải thông tin người dùng');
-            } finally {
-                setLoading(false);
-            }
-        };
+        // If we don't have user data, get it once
+        if (!user) {
+            getUserInfo(); // This is now cached in the auth store
+        } else {
+            // If we already have user data, use it immediately
+            updateUserData(user);
+            setLoading(false);
+        }
+    }, [token, user]);
 
-        fetchUserData();
-    }, [token]);
+    // Update user data when auth store user changes
+    useEffect(() => {
+        if (user) {
+            updateUserData(user);
+            setLoading(false);
+        }
+    }, [user]);
+
+    // Helper function to update user data from user object
+    const updateUserData = (userData: User) => {
+        setUserData({
+            name: userData.username || userData.name || 'Chưa có thông tin',
+            phone: userData.phone || 'Chưa có thông tin',
+            point: userData.loyaltyPoints?.toString() || '0',
+            loyalty: evaluateLoyalty(userData.loyaltyPoints || 0),
+        });
+    };
 
     return (
         <div className="mt-6 grid select-none grid-cols-9 gap-10">

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useRouter, usePathname } from 'next/navigation';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export function Header() {
     return (
@@ -53,87 +53,44 @@ function Navigation() {
 }
 
 function Account() {
-    const { isAuthenticated, logout, user, token, getUserInfo } =
-        useAuthStore();
+    const { isAuthenticated, logout, user, getUserInfo } = useAuthStore();
     const [displayName, setDisplayName] = useState<string>('User');
     const [initial, setInitial] = useState<string>('U');
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const initRef = useRef(false);
     const router = useRouter();
 
     // Run once on component mount to fetch user data if needed
     useEffect(() => {
-        const fetchUserDataOnMount = async () => {
-            console.log('Header Account component mounted');
+        if (initRef.current) return;
+        initRef.current = true;
 
-            if (isAuthenticated && token) {
-                console.log('User is authenticated with token');
-
-                // If no user data at all, try to fetch it
-                if (!user) {
-                    console.log('No user data, fetching from API...');
-                    try {
-                        await getUserInfo();
-                    } catch (error) {
-                        console.error(
-                            'Failed to fetch user data on mount:',
-                            error,
-                        );
-                    }
-                }
-                // If user exists but no name, also try to fetch more complete data
-                else if (user && !user.username) {
-                    console.log(
-                        'User exists but missing name, fetching more data...',
-                    );
-                    try {
-                        await getUserInfo();
-                    } catch (error) {
-                        console.error(
-                            'Failed to fetch additional user data:',
-                            error,
-                        );
-
-                        // If we still don't have a name, use email or set a default
-                        if (user.email) {
-                            console.log(
-                                'Using email as fallback for name:',
-                                user.email,
-                            );
-                            setDisplayName(user.email.split('@')[0]);
-                            setInitial((user.email[0] || 'U').toUpperCase());
-                        }
-                    }
-                }
-            }
-        };
-
-        fetchUserDataOnMount();
-    }, [isAuthenticated, token, user, getUserInfo, setDisplayName, setInitial]);
+        // Only try to get user info if authenticated and we don't have complete user data
+        // The getUserInfo function now has caching built-in
+        if (isAuthenticated && (!user || !user.name)) {
+            getUserInfo();
+        }
+    }, [isAuthenticated, user, getUserInfo]);
 
     // This effect updates the displayed name whenever user data changes
     useEffect(() => {
         if (user) {
-            console.log('User data updated in header:', user);
             // First try to get the name from user object
             if (user.name) {
-                console.log('Setting display name to:', user.name);
                 setDisplayName(user.name);
                 setInitial((user.name[0] || 'U').toUpperCase());
             }
             // If no name, try to use username
             else if (user.username) {
-                console.log('Setting display name to username:', user.username);
                 setDisplayName(user.username);
                 setInitial((user.username[0] || 'U').toUpperCase());
             }
             // Fall back to email if available
             else if (user.email) {
-                console.log('Setting display name to email:', user.email);
                 setDisplayName(user.email.split('@')[0]);
                 setInitial((user.email[0] || 'U').toUpperCase());
             }
         } else {
-            console.log('No user data available');
             setDisplayName('User');
             setInitial('U');
         }

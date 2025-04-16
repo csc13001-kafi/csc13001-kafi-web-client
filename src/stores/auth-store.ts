@@ -9,6 +9,8 @@ export interface User {
     email: string;
     phone?: string;
     username?: string;
+    loyaltyPoints?: number;
+    loyalty?: string;
 }
 
 interface AuthResponse {
@@ -28,6 +30,8 @@ interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
+    lastUserFetch: number | null;
+    isUserInfoFetching: boolean;
     login: (email: string, password: string) => Promise<void>;
     signup: (
         name: string,
@@ -48,6 +52,9 @@ interface AuthState {
     clearError: () => void;
 }
 
+// Cache TTL in milliseconds - 5 minutes
+const USER_CACHE_TTL = 5 * 60 * 1000;
+
 export const useAuthStore = create<AuthState>()(
     persist(
         (set, get) => ({
@@ -56,33 +63,59 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             isLoading: false,
             error: null,
+            lastUserFetch: null,
+            isUserInfoFetching: false,
 
             clearError: () => {
                 set({ error: null });
             },
 
             getUserInfo: async () => {
-                const { token } = get();
-                console.log('Token in getUserInfo:', token);
+                const { token, user, lastUserFetch, isUserInfoFetching } =
+                    get();
+
                 if (!token) return;
 
+                if (isUserInfoFetching) {
+                    console.log(
+                        'User info fetch already in progress, skipping duplicate request',
+                    );
+                    return;
+                }
+
+                const now = Date.now();
+                const isCacheValid =
+                    lastUserFetch && now - lastUserFetch < USER_CACHE_TTL;
+
+                if (user && isCacheValid) {
+                    console.log('Using cached user data');
+                    return;
+                }
+
                 try {
-                    console.log('Fetching user info...');
-                    let userData = null;
+                    set({ isUserInfoFetching: true });
+                    console.log(
+                        'Fetching user info (cache expired or not available)',
+                    );
 
                     const response = await api.get<User>(`/users/user`);
-                    userData = response.data;
+                    const userData = response.data;
 
                     if (userData) {
-                        set({ user: userData });
+                        set({
+                            user: userData,
+                            lastUserFetch: Date.now(),
+                            isUserInfoFetching: false,
+                        });
+                        console.log('User data fetched and cached');
                     } else {
-                        console.error(
-                            'All endpoints failed to retrieve user data',
-                        );
+                        console.error('Failed to retrieve user data');
+                        set({ isUserInfoFetching: false });
                     }
                 } catch (err) {
                     console.error('Error fetching user info:', err);
-                    // If we can't get user info, we might want to log out
+                    set({ isUserInfoFetching: false });
+
                     if (
                         axios.isAxiosError(err) &&
                         err.response?.status === 401
