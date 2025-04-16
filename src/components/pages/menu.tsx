@@ -56,7 +56,7 @@ function CategoryList({
     onSelectCategory: (categoryId: string | null) => void;
 }) {
     return (
-        <div className="flex justify-center">
+        <div className="flex select-none justify-center">
             <div className="grid grid-cols-5 gap-6 md:gap-10 lg:gap-20">
                 {categories.map((category) => (
                     <div
@@ -87,22 +87,11 @@ function CategoryList({
     );
 }
 
-// Helper function to get emoji based on category name
-function getCategoryEmoji(categoryName: string): string {
-    const name = categoryName.toLowerCase();
-    if (name.includes('cà phê') || name.includes('coffee')) return '☕';
-    if (name.includes('trà') || name.includes('tea')) return '🍵';
-    if (name.includes('bánh') || name.includes('cake')) return '🍰';
-    if (name.includes('đá xay') || name.includes('ice blend')) return '🧊';
-    if (name.includes('matcha')) return '🍵';
-    return '🍹';
-}
-
 function ProductList({ products }: { products: Product[] }) {
     const [imgError, setImgError] = useState<Record<string, boolean>>({});
 
     return (
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <div className="grid select-none grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {products.map((product) => (
                 <div
                     key={product.id}
