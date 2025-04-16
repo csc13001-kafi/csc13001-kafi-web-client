@@ -11,7 +11,7 @@ interface AuthProviderProps {
 // Pages that require authentication
 const protectedPaths = [
     '/edit-profile',
-    '/membership',
+    // '/membership', // Removed to allow access without authentication
     // Add other protected paths here
 ];
 
