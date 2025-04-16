@@ -8,7 +8,7 @@ import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
 const FeedbackPage = () => (
-    <div className="flex min-h-screen flex-col bg-gray-100">
+    <div className="flex min-h-screen select-none flex-col bg-gray-100">
         <Header />
         <div className="flex-1 p-8">
             <div className="relative mx-28 space-y-20">
