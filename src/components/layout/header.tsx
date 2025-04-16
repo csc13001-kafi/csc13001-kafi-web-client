@@ -9,10 +9,17 @@ import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { useEffect, useState, useRef } from 'react';
 
 export function Header() {
+    const router = useRouter();
     return (
         <div className="flex items-center justify-between px-40 py-8">
             <div className="flex items-center">
-                <Image src={logo} alt="Kafi Logo" width={120} height={120} />
+                <Image
+                    src={logo}
+                    onClick={() => router.push('/')}
+                    alt="Kafi Logo"
+                    width={120}
+                    height={120}
+                />
             </div>
             <div className="flex items-center gap-8">
                 <Navigation />
