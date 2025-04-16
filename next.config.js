@@ -13,6 +13,9 @@ const nextConfig = {
         // your project has type errors.
         ignoreBuildErrors: true,
     },
+    images: {
+        domains: ['kafi-storage.sgp1.digitaloceanspaces.com'],
+    },
 };
 
 export default nextConfig;
