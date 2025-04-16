@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useRouter, usePathname } from 'next/navigation';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 export function Header() {
     const router = useRouter();
@@ -64,24 +64,27 @@ function Account() {
     const [displayName, setDisplayName] = useState<string>('User');
     const [initial, setInitial] = useState<string>('U');
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const initRef = useRef(false);
     const router = useRouter();
 
     // Run once on component mount to fetch user data if needed
     useEffect(() => {
-        if (initRef.current) return;
-        initRef.current = true;
+        const fetchUserData = async () => {
+            // If authenticated and we don't have complete user data
+            if (isAuthenticated) {
+                if (!user || !user.username) {
+                    console.log('Fetching user data for header');
+                    await getUserInfo();
+                }
+            }
+        };
 
-        // Only try to get user info if authenticated and we don't have complete user data
-        // The getUserInfo function now has caching built-in
-        if (isAuthenticated && (!user || !user.name)) {
-            getUserInfo();
-        }
+        fetchUserData();
     }, [isAuthenticated, user, getUserInfo]);
 
     // This effect updates the displayed name whenever user data changes
     useEffect(() => {
         if (user) {
+            console.log('User data in header:', user);
             // Prioritize username as the primary display name
             if (user.username) {
                 setDisplayName(user.username);
@@ -92,10 +95,12 @@ function Account() {
                 setDisplayName(user.name);
                 setInitial((user.name[0] || 'U').toUpperCase());
             }
-            // Last resort: email (without trimming)
+            // Last resort: email (without showing full email)
             else if (user.email) {
-                setDisplayName(user.email);
-                setInitial((user.email[0] || 'U').toUpperCase());
+                // Just use the first part of the email
+                const emailPrefix = user.email.split('@')[0];
+                setDisplayName(emailPrefix);
+                setInitial((emailPrefix[0] || 'U').toUpperCase());
             }
         } else {
             setDisplayName('User');

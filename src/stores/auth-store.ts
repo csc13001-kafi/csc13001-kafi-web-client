@@ -102,8 +102,18 @@ export const useAuthStore = create<AuthState>()(
                     const userData = response.data;
 
                     if (userData) {
+                        // Ensure username is set properly and not overridden with email
+                        // Only use response data if it has a meaningful username
+                        const updatedUser = {
+                            ...userData,
+                            // If API returned a username, use it; otherwise keep existing username if any
+                            username: userData.username || user?.username || '',
+                        };
+
+                        console.log('Updated user data:', updatedUser);
+
                         set({
-                            user: userData,
+                            user: updatedUser,
                             lastUserFetch: Date.now(),
                             isUserInfoFetching: false,
                         });
@@ -150,13 +160,12 @@ export const useAuthStore = create<AuthState>()(
                     let responseUser =
                         response.data.user || response.data.userData;
 
-                    // If the user object is not in the expected format, try to construct it
                     if (!responseUser && responseToken) {
                         responseUser = {
                             id: 'temp-id',
                             email: email,
-                            name: 'User', // Use a generic name instead of email prefix
-                            username: email, // Store the full email as username until we fetch the real one
+                            name: 'User',
+                            username: '',
                         };
                         console.log(
                             'Created fallback user object:',
@@ -173,6 +182,8 @@ export const useAuthStore = create<AuthState>()(
                             isAuthenticated: true,
                             user: responseUser,
                             token: responseToken,
+                            // Reset cache to force a fresh fetch
+                            lastUserFetch: null,
                         });
 
                         // Always fetch complete user data after login
