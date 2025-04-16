@@ -82,19 +82,19 @@ function Account() {
     // This effect updates the displayed name whenever user data changes
     useEffect(() => {
         if (user) {
-            // First try to get the name from user object
-            if (user.name) {
-                setDisplayName(user.name);
-                setInitial((user.name[0] || 'U').toUpperCase());
-            }
-            // If no name, try to use username
-            else if (user.username) {
+            // Prioritize username as the primary display name
+            if (user.username) {
                 setDisplayName(user.username);
                 setInitial((user.username[0] || 'U').toUpperCase());
             }
-            // Fall back to email if available
+            // Fall back to name if username is not available
+            else if (user.name) {
+                setDisplayName(user.name);
+                setInitial((user.name[0] || 'U').toUpperCase());
+            }
+            // Last resort: email (without trimming)
             else if (user.email) {
-                setDisplayName(user.email.split('@')[0]);
+                setDisplayName(user.email);
                 setInitial((user.email[0] || 'U').toUpperCase());
             }
         } else {

@@ -154,8 +154,9 @@ export const useAuthStore = create<AuthState>()(
                     if (!responseUser && responseToken) {
                         responseUser = {
                             id: 'temp-id',
-                            name: email.split('@')[0], // Use part before @ as display name
                             email: email,
+                            name: 'User', // Use a generic name instead of email prefix
+                            username: email, // Store the full email as username until we fetch the real one
                         };
                         console.log(
                             'Created fallback user object:',
@@ -174,16 +175,9 @@ export const useAuthStore = create<AuthState>()(
                             token: responseToken,
                         });
 
-                        // If we don't have enough user info, try to fetch it
-                        if (
-                            (!responseUser || !responseUser.name) &&
-                            responseToken
-                        ) {
-                            console.log(
-                                'User info incomplete, fetching more details...',
-                            );
-                            await get().getUserInfo();
-                        }
+                        // Always fetch complete user data after login
+                        // This ensures we get the real username from the server
+                        await get().getUserInfo();
                     } else {
                         throw new Error('No token received from server');
                     }
