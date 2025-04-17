@@ -1,5 +1,5 @@
-import Menu from "@/components/pages/menu";
+import Menu from '@/components/pages/menu';
 
 export default function MenuPage() {
-  return <Menu />;
-} 
+    return <Menu />;
+}

@@ -1,5 +1,5 @@
-import PasswordRecoveryPage from "@/components/pages/password-recovery-page";
+import PasswordRecoveryPage from '@/components/pages/password-recovery-page';
 
 export default function PasswordRecovery() {
-  return <PasswordRecoveryPage />;
-} 
+    return <PasswordRecoveryPage />;
+}

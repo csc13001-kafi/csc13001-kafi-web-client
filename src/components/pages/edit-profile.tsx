@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import api from '@/lib/api';
@@ -10,7 +10,7 @@ import { useAuthStore } from '@/stores/auth-store';
 export default function EditProfile() {
     // States for password change section
     const router = useRouter();
-    const { logout } = useAuthStore();
+    const { logout, user, getUserInfo } = useAuthStore();
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,6 +18,115 @@ export default function EditProfile() {
         [key: string]: string;
     }>({});
     const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+    // States for profile update section
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('N/A');
+    const [profileErrors, setProfileErrors] = useState<{
+        [key: string]: string;
+    }>({});
+    const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch user data when component mounts
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                setIsLoading(true);
+                const response = await api.get('/users/user');
+                const userData = response.data;
+
+                // Set form values from fetched data
+                setUsername(userData.username || '');
+                setEmail(userData.email || '');
+                setPhone(userData.phone || '');
+                setAddress(userData.address || 'N/A'); // Use N/A as default if no address
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                toast.error('Không thể tải thông tin người dùng');
+
+                // Fallback to store data if API fetch fails
+                if (user) {
+                    setUsername(user.username || '');
+                    setEmail(user.email || '');
+                    setPhone(user.phone || '');
+                    setAddress('N/A');
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [user]);
+
+    // Profile validation function
+    const validateProfile = () => {
+        const errors: { [key: string]: string } = {};
+
+        if (!username) {
+            errors.username = 'Vui lòng nhập tên người dùng';
+        }
+
+        if (!email) {
+            errors.email = 'Vui lòng nhập email';
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+            errors.email = 'Email không hợp lệ';
+        }
+
+        if (phone && !/^\d{10,11}$/.test(phone)) {
+            errors.phone = 'Số điện thoại không hợp lệ';
+        }
+
+        if (!address) {
+            errors.address = 'Vui lòng nhập địa chỉ hoặc để N/A';
+        }
+
+        setProfileErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    // Handle profile update submission
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateProfile()) {
+            return;
+        }
+
+        try {
+            setIsUpdatingProfile(true);
+
+            // Call the API endpoint to update profile
+            await api.patch('/users/user', {
+                username,
+                email,
+                phone,
+                address,
+            });
+
+            // Update user info in store
+            await getUserInfo();
+
+            // Show success message
+            toast.success('Thông tin cá nhân đã được cập nhật thành công');
+        } catch (error: unknown) {
+            console.error('Error updating profile:', error);
+
+            // Handle specific API error messages
+            const errorResponse = error as {
+                response?: { data?: { message?: string } };
+            };
+            const errorMessage =
+                errorResponse.response?.data?.message ||
+                'Không thể cập nhật thông tin. Vui lòng thử lại.';
+            toast.error(errorMessage);
+        } finally {
+            setIsUpdatingProfile(false);
+        }
+    };
 
     // Password validation function
     const validatePasswords = () => {
@@ -100,6 +209,19 @@ export default function EditProfile() {
         }
     };
 
+    // Show loading state while fetching user data
+    if (isLoading) {
+        return (
+            <div className="flex min-h-screen flex-col bg-gray-100">
+                <Header />
+                <div className="flex flex-1 items-center justify-center">
+                    <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-green-700"></div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
     return (
         <div className="flex min-h-screen flex-col bg-gray-100">
             <Header />
@@ -109,25 +231,52 @@ export default function EditProfile() {
                         Chỉnh sửa thông tin
                     </h1>
 
-                    <div className="rounded-2xl border-2 border-[#E4E4E4] bg-white p-6 shadow">
+                    <form
+                        onSubmit={handleUpdateProfile}
+                        className="rounded-2xl border-2 border-[#E4E4E4] bg-white p-6 shadow"
+                    >
                         <h2 className="mb-4 text-2xl font-semibold">
                             Thông tin cơ bản
                         </h2>
                         <div className="space-y-4">
                             <InputField
-                                label="Họ và Tên"
-                                placeholder="Nhập họ tên"
+                                label="Tên người dùng"
+                                placeholder="Nhập tên người dùng"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                error={profileErrors.username}
                             />
                             <InputField
                                 label="Email"
                                 placeholder="Nhập email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                error={profileErrors.email}
                             />
                             <InputField
                                 label="Số điện thoại"
                                 placeholder="Nhập số điện thoại"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                error={profileErrors.phone}
                             />
+                            <div className="mt-6">
+                                <button
+                                    type="submit"
+                                    disabled={isUpdatingProfile}
+                                    className={`w-full rounded-2xl px-4 py-3 font-medium text-white ${
+                                        isUpdatingProfile
+                                            ? 'cursor-not-allowed bg-gray-400'
+                                            : 'bg-green-600 hover:bg-green-700'
+                                    }`}
+                                >
+                                    {isUpdatingProfile
+                                        ? 'Đang xử lý...'
+                                        : 'Cập nhật thông tin'}
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
 
                     <form
                         onSubmit={handleChangePassword}
@@ -175,7 +324,7 @@ export default function EditProfile() {
                                 >
                                     {isChangingPassword
                                         ? 'Đang xử lý...'
-                                        : 'Lưu thay đổi'}
+                                        : 'Lưu thay đổi mật khẩu'}
                                 </button>
                             </div>
                         </div>
