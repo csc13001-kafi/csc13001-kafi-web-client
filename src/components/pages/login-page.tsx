@@ -3,7 +3,6 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import groupcf from '../../../public/groupcf.png';
-import logo from '../../../public/logo.png';
 import bgImage from '../../../public/nen.png';
 import { useAuthStore } from '@/stores/auth-store';
 import Link from 'next/link';
@@ -37,7 +36,12 @@ const LeftSection = () => (
 
 const Logo = () => (
     <div className="absolute left-36 top-8 flex items-center space-x-2">
-        <Image src={logo} alt="Kafi Logo" width={400} height={400} />
+        <Image
+            src="https://kafi-storage.sgp1.cdn.digitaloceanspaces.com/client/logo.png"
+            alt="Kafi Logo"
+            width={400}
+            height={400}
+        />
     </div>
 );
 

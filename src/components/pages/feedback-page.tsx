@@ -18,7 +18,7 @@ const FeedbackPage = () => (
                 <div className="w-full max-w-3xl space-y-6 rounded-2xl bg-white p-8 shadow-2xl">
                     <div className="mb-4 flex items-center space-x-3">
                         <Image
-                            src="/Logo.png"
+                            src="https://kafi-storage.sgp1.cdn.digitaloceanspaces.com/client/logo.png"
                             alt="Kafi Logo"
                             width={200}
                             height={200}

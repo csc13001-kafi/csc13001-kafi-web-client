@@ -1,6 +1,5 @@
 'use client';
 import Image from 'next/image';
-import logo from '../../../public/logo.png';
 import {
     EnvironmentOutlined,
     PhoneOutlined,
@@ -33,7 +32,12 @@ function Info() {
 function Kafi() {
     return (
         <div className="flex flex-col">
-            <Image src={logo} alt="Kafi Logo" width={120} height={120} />
+            <Image
+                src="https://kafi-storage.sgp1.cdn.digitaloceanspaces.com/client/logo.png"
+                alt="Kafi Logo"
+                width={120}
+                height={120}
+            />
             <p className="select-none">Coffee Shop</p>
         </div>
     );

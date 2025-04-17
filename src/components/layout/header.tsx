@@ -1,7 +1,6 @@
 'use client';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import logo from '../../../public/logo.png';
 import { useAuthStore } from '@/stores/auth-store';
 import { useRouter, usePathname } from 'next/navigation';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
@@ -14,7 +13,7 @@ export function Header() {
         <div className="flex items-center justify-between px-40 py-8">
             <div className="flex items-center">
                 <Image
-                    src={logo}
+                    src="https://kafi-storage.sgp1.cdn.digitaloceanspaces.com/client/logo.png"
                     onClick={() => router.push('/')}
                     alt="Kafi Logo"
                     width={120}
