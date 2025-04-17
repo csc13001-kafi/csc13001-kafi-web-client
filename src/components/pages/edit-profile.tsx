@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function EditProfile() {
-    // States for password change section
     const router = useRouter();
     const { logout, user, getUserInfo } = useAuthStore();
     const [oldPassword, setOldPassword] = useState('');
@@ -19,7 +18,6 @@ export default function EditProfile() {
     }>({});
     const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-    // States for profile update section
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -30,7 +28,6 @@ export default function EditProfile() {
     const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch user data when component mounts
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -38,7 +35,6 @@ export default function EditProfile() {
                 const response = await api.get('/users/user');
                 const userData = response.data;
 
-                // Set form values from fetched data
                 setUsername(userData.username || '');
                 setEmail(userData.email || '');
                 setPhone(userData.phone || '');
@@ -47,7 +43,6 @@ export default function EditProfile() {
                 console.error('Error fetching user data:', error);
                 toast.error('Không thể tải thông tin người dùng');
 
-                // Fallback to store data if API fetch fails
                 if (user) {
                     setUsername(user.username || '');
                     setEmail(user.email || '');
@@ -62,7 +57,6 @@ export default function EditProfile() {
         fetchUserData();
     }, [user]);
 
-    // Profile validation function
     const validateProfile = () => {
         const errors: { [key: string]: string } = {};
 
@@ -88,7 +82,6 @@ export default function EditProfile() {
         return Object.keys(errors).length === 0;
     };
 
-    // Handle profile update submission
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -100,17 +93,30 @@ export default function EditProfile() {
             setIsUpdatingProfile(true);
 
             // Call the API endpoint to update profile
-            await api.patch('/users/user', {
+            const response = await api.patch('/users/user', {
                 username,
                 email,
                 phone,
                 address,
             });
 
-            // Update user info in store
+            console.log('Profile update response:', response.data);
+
+            useAuthStore.setState({ lastUserFetch: null });
+
             await getUserInfo();
 
-            // Show success message
+            if (user) {
+                useAuthStore.setState({
+                    user: {
+                        ...user,
+                        username,
+                        email,
+                        phone,
+                    },
+                });
+            }
+
             toast.success('Thông tin cá nhân đã được cập nhật thành công');
         } catch (error: unknown) {
             console.error('Error updating profile:', error);
