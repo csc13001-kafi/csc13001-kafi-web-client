@@ -9,7 +9,10 @@ const nextConfig = {
         ignoreBuildErrors: true,
     },
     images: {
-        domains: ['kafi-storage.sgp1.cdn.digitaloceanspaces.com'],
+        domains: [
+            'kafi-storage.sgp1.cdn.digitaloceanspaces.com',
+            'kafi-storage.sgp1.digitaloceanspaces.com',
+        ],
     },
 };
 
